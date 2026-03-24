@@ -34,23 +34,55 @@ show_usage() {
     show_header
     echo -e "${WHITE}Usage:${NC}"
     echo -e "${WHITE}  ./mwf.sh <targets_with_fuzz.txt>${NC}"
+    echo -e "${WHITE}  ./mwf.sh -h | --help  (To view detailed documentation)${NC}"
     echo ""
     echo -e "${WHITE}Configuration:${NC}"
     echo -e "${WHITE}  Ensure ${RED}$WORDLIST_CONFIG${WHITE} is in the same directory.${NC}"
-    echo -e "${WHITE}  This file should contain absolute paths to your SecLists.${NC}"
     echo -e "${WHITE}------------------------------------------------------------${NC}"
 }
 
-# 1. Validation Checks
-if [ ! -f "$WORDLIST_CONFIG" ]; then
+show_help() {
     show_header
-    echo -e "${RED}[!] ERROR: Configuration file '$WORDLIST_CONFIG' not found!${NC}"
-    echo -e "${WHITE}Please create it and add your SecLists paths (one per line).${NC}"
-    exit 1
+    echo -e "${RED}ABOUT MASSWEBFUZZ (MWF)${NC}"
+    echo -e "${WHITE}MWF is an advanced automation wrapper for ffuf, engineered specifically${NC}"
+    echo -e "${WHITE}for large-scale Bug Bounty reconnaissance and Penetration Testing.${NC}\n"
+
+    echo -e "${RED}HOW IT WORKS (THE LOGIC)${NC}"
+    echo -e "${WHITE}1. ${RED}Outer Loop:${WHITE} The script reads your target file line-by-line. Each URL${NC}"
+    echo -e "${WHITE}   must contain the 'FUZZ' keyword to indicate the injection point.${NC}"
+    echo -e "${WHITE}2. ${RED}Inner Loop:${WHITE} For every single target URL, MWF iterates through your${NC}"
+    echo -e "${WHITE}   entire configuration of 6000+ SecLists wordlist paths.${NC}"
+    echo -e "${WHITE}3. ${RED}Persistence:${WHITE} It sanitizes the URL into a safe filename. Results from${NC}"
+    echo -e "${WHITE}   all wordlists are appended to this single file without overwriting.${NC}"
+    echo -e "${WHITE}4. ${RED}Pro Matching:${WHITE} Hardcoded to capture high-value status codes crucial${NC}"
+    echo -e "${WHITE}   for bypassing auth or finding hidden assets:${NC}"
+    echo -e "${WHITE}   (200, 204, 301, 302, 307, 401, 403, 405, 500)${NC}\n"
+
+    echo -e "${RED}USAGE EXAMPLES${NC}"
+    echo -e "${WHITE}  Start scanning:    ${RED}./mwf.sh targets.txt${NC}"
+    echo -e "${WHITE}  Show this menu:    ${RED}./mwf.sh --help${NC}\n"
+
+    echo -e "${RED}CONFIGURATION FILE${NC}"
+    echo -e "${WHITE}  You must populate ${RED}$WORDLIST_CONFIG${WHITE} with absolute paths${NC}"
+    echo -e "${WHITE}  to your wordlists (one per line) in the execution directory.${NC}"
+    echo -e "${WHITE}------------------------------------------------------------${NC}"
+    exit 0
+}
+
+# 1. Validation Checks & Argument Parsing
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+    show_help
 fi
 
 if [ -z "$1" ]; then
     show_usage
+    exit 1
+fi
+
+if [ ! -f "$WORDLIST_CONFIG" ]; then
+    show_header
+    echo -e "${RED}[!] ERROR: Configuration file '$WORDLIST_CONFIG' not found!${NC}"
+    echo -e "${WHITE}Please create it and add your SecLists paths (one per line).${NC}"
     exit 1
 fi
 
